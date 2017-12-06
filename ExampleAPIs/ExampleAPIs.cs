@@ -90,4 +90,11 @@ namespace ExampleAPIs
         {
         }
     }
+
+    public class BadType9
+    {
+        public BadType9(Newtonsoft.Json.IJsonLineInfo f)
+        {
+        }
+    }
 }
