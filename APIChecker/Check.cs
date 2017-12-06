@@ -30,18 +30,19 @@ namespace Redgate.Tools.APIChecker
         }
 
         public bool ReturnsOnlyOwnedAndSystemTypes(Type t)
-        {
-            var typesInClass = TypesInClass(t).Where(x => !TypeIsDescribedInAssemblyOrSystemType(x)).ToList();
-            var publicMethods = t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+        {            
             var invalidType = false;
 
+            // Check types references by the class
+            var typesInClass = TypesInClass(t).Where(x => !TypeIsDescribedInAssemblyOrSystemType(x)).ToList();
             if (typesInClass.Any())
             {
                 m_Reporter.TypeNotApproved(t, null, typesInClass);
                 invalidType = true;
             }
 
-            foreach(var method in publicMethods)
+            // Process all the exposed methods of the class
+            foreach(var method in t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
             {
                 try
                 {
