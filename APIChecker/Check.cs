@@ -24,11 +24,22 @@ namespace Redgate.Tools.APIChecker
             m_Assembly = Assembly.LoadFile(assemblyName);
         }
 
+        private IEnumerable<Type> TypesInClass(Type t)
+        {
+            return t.GetGenericArguments().SelectMany(x => x.GetGenericParameterConstraints()).Append(t);
+        }
+
         public bool ReturnsOnlyOwnedAndSystemTypes(Type t)
         {
+            var typesInClass = TypesInClass(t).Where(x => !TypeIsDescribedInAssemblyOrSystemType(x)).ToList();
             var publicMethods = t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            var invalidType = false;
 
-            var invalidMethods = false;            
+            if (typesInClass.Any())
+            {
+                m_Reporter.TypeNotApproved(t, null, typesInClass);
+                invalidType = true;
+            }
 
             foreach(var method in publicMethods)
             {
@@ -40,7 +51,7 @@ namespace Redgate.Tools.APIChecker
                     if (unownedTypes.Any())
                     {
                         m_Reporter.TypeNotApproved(t, method, unownedTypes);
-                        invalidMethods = true;
+                        invalidType = true;
                     }
                 }
                 catch (Exception e)
@@ -49,7 +60,7 @@ namespace Redgate.Tools.APIChecker
                 }
             }
 
-            if (invalidMethods)
+            if (invalidType)
             {
                 return false;
             }
