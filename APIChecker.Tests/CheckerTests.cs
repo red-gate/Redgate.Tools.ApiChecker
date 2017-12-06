@@ -111,13 +111,13 @@ namespace Redgate.Tools.APIChecker.Tests
             Assert.True(Check.ReturnsOnlyOwnedAndSystemTypes(typeof(ExampleAPIs.SimpleType5<>)));
         }
 
-        [Fact(Skip="Generic types are complicated and not implemented yet")]
+        [Fact]
         public void Constrained_Generics_To_External_Types_Are_Bad()
         {
             Assert.False(Check.ReturnsOnlyOwnedAndSystemTypes(typeof(ExampleAPIs.BadType7<>)));
         }
 
-        [Fact(Skip = "Generic types are complicated and not implemented yet")]
+        [Fact]
         public void Constrained_Generics_To_External_Types_In_Methods_Are_Bad()
         {
             Assert.False(Check.ReturnsOnlyOwnedAndSystemTypes(typeof(ExampleAPIs.BadType8)));
