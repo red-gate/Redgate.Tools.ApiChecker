@@ -123,6 +123,12 @@ namespace Redgate.Tools.APIChecker.Tests
             Assert.False(Check.ReturnsOnlyOwnedAndSystemTypes(typeof(ExampleAPIs.BadType8)));
         }
 
+        [Fact(Skip="Constructors aren't handled")]
+        public void Constructors_Work()
+        {
+            Assert.False(Check.ReturnsOnlyOwnedAndSystemTypes(typeof(ExampleAPIs.BadType9)));
+        }
+
         private class TestReporter : IReporter
         {
             internal readonly List<Type> ApprovedTypes = new List<Type>();
