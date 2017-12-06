@@ -28,7 +28,7 @@ namespace Redgate.Tools.APIChecker
         {
             var publicMethods = t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
-            var invalidMethods = false;
+            var invalidMethods = false;            
 
             foreach(var method in publicMethods)
             {
@@ -60,7 +60,13 @@ namespace Redgate.Tools.APIChecker
 
         private IEnumerable<Type> TypesInMethod(MethodInfo method)
         {
-            return method.GetParameters().Select(x => x.ParameterType).Append(method.ReturnType).SelectMany(Types);
+            var genericArguments = method.GetGenericArguments();
+            var constraints = genericArguments.SelectMany(x => x.GetGenericParameterConstraints());
+
+            return method.GetParameters().Select(x => x.ParameterType).
+                Append(method.ReturnType).
+                Concat(genericArguments).Concat(constraints).
+                SelectMany(Types);
         }
 
         private static IEnumerable<Type> Types(Type returnType)
@@ -69,7 +75,8 @@ namespace Redgate.Tools.APIChecker
 
             foreach (var arg in returnType.GetGenericArguments())
             {
-                yield return arg;
+                foreach (var type in Types(arg))
+                    yield return type;
             }
         }
 
