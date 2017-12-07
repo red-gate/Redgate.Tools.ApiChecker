@@ -13,7 +13,7 @@ namespace Redgate.Tools.APIChecker
     /// - It references framework types (determined by belonging to Microsoft)
     /// - It references public types from the same assembly
     /// </summary>
-    public partial class Check
+    public class Check
     {
         private readonly IReporter m_Reporter;
         private readonly Assembly m_Assembly;

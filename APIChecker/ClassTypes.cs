@@ -6,7 +6,7 @@ namespace Redgate.Tools.APIChecker
 {
     internal class ClassTypes : IGetTypes
     {
-        private Type m_Class;
+        private readonly Type m_Class;
 
         public ClassTypes(Type @class)
         {
