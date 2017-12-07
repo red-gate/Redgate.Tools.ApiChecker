@@ -13,7 +13,7 @@ namespace Redgate.Tools.APIChecker
     /// - It references framework types (determined by belonging to Microsoft)
     /// - It references public types from the same assembly
     /// </summary>
-    public class Check
+    public partial class Check
     {
         private readonly IReporter m_Reporter;
         private readonly Assembly m_Assembly;
@@ -24,41 +24,21 @@ namespace Redgate.Tools.APIChecker
             m_Assembly = Assembly.LoadFile(assemblyName);
         }
 
-        private IEnumerable<Type> TypesInClass(Type t)
-        {
-            return t.GetGenericArguments().SelectMany(x => x.GetGenericParameterConstraints()).Append(t);
-        }
-
         public bool ReturnsOnlyOwnedAndSystemTypes(Type t)
-        {            
-            var invalidType = false;
-
+        {
             // Check types references by the class
-            var typesInClass = TypesInClass(t).Where(x => !TypeIsDescribedInAssemblyOrSystemType(x)).ToList();
-            if (typesInClass.Any())
-            {
-                m_Reporter.TypeNotApproved(t, null, typesInClass);
-                invalidType = true;
-            }
+            var typesInClass = new ClassTypes(t);
+            var invalidType = CheckForExternalType(t, typesInClass);
 
             // Process all the exposed methods of the class
-            foreach(var method in t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
+            foreach (var method in t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Select(x => new MethodTypes(x)))
             {
-                try
-                {
-                    var unownedTypes = TypesInMethod(method).Where(x => !TypeIsDescribedInAssemblyOrSystemType(x))
-                        .ToList();
+                invalidType = invalidType || CheckForExternalType(t, method);
+            }
 
-                    if (unownedTypes.Any())
-                    {
-                        m_Reporter.TypeNotApproved(t, method, unownedTypes);
-                        invalidType = true;
-                    }
-                }
-                catch (Exception e)
-                {
-                    m_Reporter.TypeCausedError(t, method, e);
-                }
+            foreach (var method in t.GetConstructors(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Select(x => new ConstructorTypes(x)))
+            {
+                invalidType = invalidType || CheckForExternalType(t, method);
             }
 
             if (invalidType)
@@ -70,26 +50,23 @@ namespace Redgate.Tools.APIChecker
             return true;
         }
 
-        private IEnumerable<Type> TypesInMethod(MethodInfo method)
+        private bool CheckForExternalType(Type t, IGetTypes type)
         {
-            var genericArguments = method.GetGenericArguments();
-            var constraints = genericArguments.SelectMany(x => x.GetGenericParameterConstraints());
-
-            return method.GetParameters().Select(x => x.ParameterType).
-                Append(method.ReturnType).
-                Concat(genericArguments).Concat(constraints).
-                SelectMany(Types);
-        }
-
-        private static IEnumerable<Type> Types(Type returnType)
-        {
-            yield return returnType;
-
-            foreach (var arg in returnType.GetGenericArguments())
+            try
             {
-                foreach (var type in Types(arg))
-                    yield return type;
+                var unownedTypes = type.Types().Where(x => !TypeIsDescribedInAssemblyOrSystemType(x)).ToList();
+
+                if (unownedTypes.Any())
+                {
+                    m_Reporter.TypeNotApproved(t, type.Name, unownedTypes);
+                    return true;
+                }
             }
+            catch (Exception e)
+            {
+                m_Reporter.TypeCausedError(t, type.Name, e);
+            }
+            return false;
         }
 
         public bool TypeIsDescribedInAssemblyOrSystemType(Type t)

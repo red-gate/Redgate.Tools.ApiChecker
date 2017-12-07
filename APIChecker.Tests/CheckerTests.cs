@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -98,10 +99,10 @@ namespace Redgate.Tools.APIChecker.Tests
         {
             Check.ReturnsOnlyOwnedAndSystemTypes(typeof(ExampleAPIs.BadType));
 
-            var tuple = Reporter.InvalidTypes.Single();
+            var tuple = Reporter.InvalidTypes.First();
 
             Assert.Equal(typeof(ExampleAPIs.BadType), tuple.Item1);
-            Assert.Equal("A",tuple.Item2.Name);
+            Assert.Equal("A",tuple.Item2);
             Assert.Equal("Newtonsoft.Json.ConstructorHandling",tuple.Item3.Single().FullName);
         }
 
@@ -123,7 +124,7 @@ namespace Redgate.Tools.APIChecker.Tests
             Assert.False(Check.ReturnsOnlyOwnedAndSystemTypes(typeof(ExampleAPIs.BadType8)));
         }
 
-        [Fact(Skip="Constructors aren't handled")]
+        [Fact]
         public void Constructors_Work()
         {
             Assert.False(Check.ReturnsOnlyOwnedAndSystemTypes(typeof(ExampleAPIs.BadType9)));
@@ -133,20 +134,20 @@ namespace Redgate.Tools.APIChecker.Tests
         {
             internal readonly List<Type> ApprovedTypes = new List<Type>();
 
-            internal readonly List<Tuple<Type, MethodInfo, IEnumerable<Type>>> InvalidTypes = new 
-                List<Tuple<Type, MethodInfo, IEnumerable<Type>>>();
+            internal readonly List<Tuple<Type, string, IEnumerable<Type>>> InvalidTypes = new 
+                List<Tuple<Type, string, IEnumerable<Type>>>();
 
             public void TypeApproved(Type t)
             {
                 ApprovedTypes.Add(t);
             }
 
-            public void TypeNotApproved(Type type, MethodInfo method, IEnumerable<Type> unownedTypes)
+            public void TypeNotApproved(Type type, string name, IEnumerable<Type> unownedTypes)
             {
-                InvalidTypes.Add(Tuple.Create(type,method,unownedTypes));
+                InvalidTypes.Add(Tuple.Create(type,name,unownedTypes));
             }
 
-            public void TypeCausedError(Type type, MethodInfo method, Exception exception)
+            public void TypeCausedError(Type type, string name, Exception exception)
             {
                 // TODO Test assembly resolve errors somehow
             }

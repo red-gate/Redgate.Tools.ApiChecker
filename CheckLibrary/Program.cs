@@ -26,14 +26,14 @@ namespace Redgate.Tools.APIChecker
                 Console.WriteLine("SUCCESS: {0} is a valid type", t.FullName);
             }
 
-            public void TypeNotApproved(Type type, MethodInfo method, IEnumerable<Type> unownedTypes)
+            public void TypeNotApproved(Type type, string name, IEnumerable<Type> unownedTypes)
             {
-                Console.WriteLine("WARNING: {0}.{1} uses {2} external to the assembly", type.Name, method.Name, string.Join(",", unownedTypes.Select(x => x.Name)));
+                Console.WriteLine("WARNING: {0}.{1} uses {2} external to the assembly", type.Name, name, string.Join(",", unownedTypes.Select(x => x.Name)));
             }
 
-            public void TypeCausedError(Type type, MethodInfo method, Exception exception)
+            public void TypeCausedError(Type type, string name, Exception exception)
             {
-                Console.WriteLine("ERROR: Unable to check {0}.{1} because of {2}", type.Name, method.Name, exception.Message);
+                Console.WriteLine("ERROR: Unable to check {0}.{1} because of {2}", type.Name, name, exception.Message);
             }
         }
     }

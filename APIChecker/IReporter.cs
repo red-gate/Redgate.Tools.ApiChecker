@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace Redgate.Tools.APIChecker
 {
@@ -11,19 +10,21 @@ namespace Redgate.Tools.APIChecker
         /// </summary>
         /// <param name="t"></param>
         void TypeApproved(Type t);
+
         /// <summary>
-        /// The type is not approved because method references unownedTypes
+        /// The type is not approved because name references unownedTypes
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="method"></param>
+        /// <param name="name"></param>
         /// <param name="unownedTypes"></param>
-        void TypeNotApproved(Type type, MethodInfo method, IEnumerable<Type> unownedTypes);
+        void TypeNotApproved(Type type, string name, IEnumerable<Type> unownedTypes);
+
         /// <summary>
-        /// An exception occured processed method on type because of exception
+        /// An exception occured processed name on type because of exception
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="method"></param>
+        /// <param name="name"></param>
         /// <param name="exception"></param>
-        void TypeCausedError(Type type, MethodInfo method, Exception exception);
+        void TypeCausedError(Type type, string name, Exception exception);
     }
 }
